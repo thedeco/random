@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os,sys,optparse
 parser = optparse.OptionParser('usage: usage: djb2hashcrack.py -f <djb2 hashlist> -w <wordlist>')
 parser.add_option('-f', dest='djfile', type='string', help='specify target djb2 hashlist')
