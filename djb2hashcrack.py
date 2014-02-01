@@ -22,9 +22,7 @@ solved=0
 for hash in x:
 	count=count+1
 
-print 'Running DJB2 Hash Crack against '+str(count)+' DJB2 Hashes'
-
-
+print 'Running DJB2 Hash Crack version 1.0 against '+str(count)+' DJB2 Hashes'
 
 with open(wordlist,'r') as f:
 	for line in f:
