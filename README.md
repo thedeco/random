@@ -1,4 +1,4 @@
-random
+DJB2 Basic Brute Force Python Script
 ======
 
-random code
+Feed in a wordlist & a hash or hashlist, script will run each word into the DJB2 function and shows matches.
