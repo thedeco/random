@@ -4,6 +4,7 @@ import argparse
 import os
 
 def djb2(base, word):
+    ''' Hash a word using the djb2 algorithm with the specified base. '''
     hash = base
     for c in word:
         hash = ((hash << 5) + hash + ord(c)) & (0xffffffff)
@@ -11,6 +12,7 @@ def djb2(base, word):
 
 
 def auto_int(string):
+    ''' argparse type conversion for ints. Allows base 10 and base 16 '''
     try:
         return int(string, 0)
     except ValueError as e:
@@ -18,6 +20,7 @@ def auto_int(string):
 
 
 def filepath(string):
+    ''' argparse type conversion for file paths '''
     path = string
     if not os.path.isabs(path):
         path = os.path.abspath(path)
