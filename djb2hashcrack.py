@@ -5,10 +5,9 @@ import os
 
 def djb2(base, word):
     ''' Hash a word using the djb2 algorithm with the specified base. '''
-    hash = base
     for c in word:
-        hash = ((hash << 5) + hash + ord(c)) & (0xffffffff)
-    return hash
+        base = ((base << 5) + base + ord(c)) & 0xffffffff
+    return base
 
 
 def auto_int(string):
@@ -37,7 +36,7 @@ def main():
                         help='A wordlist to crack with')
     parser.add_argument('-b', '--base',
                         type=auto_int,
-                        default=0,
+                        default=5381,
                         help='The base value at which the hash should start each iteration')
 
     group = parser.add_mutually_exclusive_group(required=True)
