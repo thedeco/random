@@ -1,40 +1,80 @@
 #!/usr/bin/env python
-import os,sys,optparse
-parser = optparse.OptionParser('usage: usage: djb2hashcrack.py -f <djb2 hashlist> -w <wordlist>')
-parser.add_option('-f', dest='djfile', type='string', help='specify target djb2 hashlist')
-parser.add_option('-w', dest='wordlist', type='string', help='specify a wordlist')
-(options, args) = parser.parse_args()
-djfile=options.djfile
-wordlist=options.wordlist
-if (djfile == None) | (wordlist == None):
-	print parser.usage
-	exit(0)
 
-def djb2(password):
-  hash = 5381
-  for c in password:
-    hash = ((hash * 33) + ord(c)) & (0xffffffff)
-  return str(hash)
+import argparse
+import os
 
-f=open(djfile,'r')
-x=f.readlines()
-count = 0
-solved=0
-for hash in x:
-	count=count+1
+def djb2(base, word):
+    hash = base
+    for c in word:
+        hash = ((hash << 5) + hash + ord(c)) & (0xffffffff)
+    return hash
 
-print 'Running DJB2 Hash Crack version 1.0 against '+str(count)+' DJB2 Hashes'
 
-with open(wordlist,'r') as f:
-	for line in f:
-		line=line.strip()
-		if line.isalnum():
-			result=djb2(line)
-			result=result.strip()
-			for i in x:
-				i=i.strip()
-				if i == result:
-					solved=solved+1
-					print '[+]Hash Cracked ('+str(solved)+'/'+str(count)+'): '+result+':'+line
-		else:
-			pass
+def auto_int(string):
+    try:
+        return int(string, 0)
+    except ValueError as e:
+        raise argparse.ArgumentTypeError('Cannot parse int: {0}'.format(e))
+
+
+def filepath(string):
+    path = string
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    if not os.path.isfile(path):
+        raise argparse.ArgumentTypeError('Cannot find file: {0}'.format(string))
+    return path
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Brute force a djb2 hash from a wordlist')
+    parser.add_argument('-w', '--wordlist',
+                        type=filepath,
+                        required=True,
+                        help='A wordlist to crack with')
+    parser.add_argument('-b', '--base',
+                        type=auto_int,
+                        default=0,
+                        help='The base value at which the hash should start each iteration')
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-d', '--hash',
+                       type=auto_int,
+                       help='Specify a single hash to crack')
+    group.add_argument('-l', '--hash-list',
+                       type=filepath,
+                       help='Specify a list of hashes to crack')
+
+    args = parser.parse_args()
+
+    # Extract hash items
+    if args.hash:
+        hashes = [args.hash]
+    else:
+        with open(args.hash_list) as f:
+            hashes = [int(line, 0) for line in f.readlines()]
+
+    print 'DJB2 Base: {0}'.format(args.base)
+    print 'Using Wordlist: {0}'.format(args.wordlist)
+
+    n_hashes = len(hashes)
+    if n_hashes == 1: print 'Cracking 1 hash...'
+    else: print 'Cracking {0} hashes...'.format(n_hashes)
+
+    n_cracked = 0
+    with open(args.wordlist) as wordlist:
+        for word in wordlist:
+            word = word.strip()
+            attempt = djb2(args.base, word)
+            for h in hashes:
+                if attempt == h:
+                    n_cracked += 1
+                    hashes.remove(h)
+                    print '[+] Hash Cracked ({0}/{1}): {2}:{3}'.format(n_cracked, n_hashes, h, word)
+
+    print ''
+    print 'Cracked {0}/{1} hashes'.format(n_cracked, n_hashes)
+                    
+
+if __name__ == '__main__':
+    main()
